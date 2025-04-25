@@ -1,21 +1,22 @@
 from typing import Optional
 from pydantic import BaseModel
 
-class ConnectedArticleBase(BaseModel):
+class ConnectedArticleCreate(BaseModel):
     linked_article_id: int
-    id_culture: int
 
-class ConnectedArticleCreate(ConnectedArticleBase):
-    pass
-
-class ConnectedArticleResponse(ConnectedArticleBase):
+class ConnectedArticleResponse(BaseModel):
     id: int
+    id_culture: int
+    linked_article_id: int
 
     class Config:
         from_attributes = True
 
-#!!!!!подумать над этим!!!!
 class LinkedArticleInfo(BaseModel):
     id: int
     title: str
+    region: Optional[str]
     main_photo: Optional[str]
+
+    class Config:
+        from_attributes = True

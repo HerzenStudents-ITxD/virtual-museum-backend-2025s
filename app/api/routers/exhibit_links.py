@@ -6,36 +6,63 @@ from app.crud.exhibit_links import (
     get_linked_exhibits,
     delete_linked_exhibit
 )
-from app.schemas.exhibit_links import ConnectedExhibitCreate, ConnectedExhibitResponse
+from app.database.models import OtherExhibit
+from app.schemas.exhibit_links import ConnectedExhibitCreate, ConnectedExhibitResponse, LinkedExhibitInfo
 from app.database.database import get_db
 
 router = APIRouter(prefix="/api/exhibits/{exhibit_id}/links")
 
-#Добавить ссылку к статье
+#добавить ссылку к статье
 @router.post("/", response_model=ConnectedExhibitResponse)
 def create_link(
-        link: ConnectedExhibitCreate,
-        db: Session = Depends(get_db)
+    exhibit_id: int,
+    link: ConnectedExhibitCreate,
+    db: Session = Depends(get_db)
 ):
-    return add_connected_to_exhibit(db, link)
+    """Создает связь между текущим экспонатом и указанным в теле запроса"""
+    try:
+        return add_connected_to_exhibit(db, exhibit_id, link)
+    except HTTPException as e:
+        raise e
+    except Exception as e:
+        raise HTTPException(status_code=500, detail=str(e))
 
-
-# Получить все ссылки статьи
-@router.get("/", response_model=List[ConnectedExhibitResponse])
+# получить все ссылки статьи
+@router.get("/", response_model=List[LinkedExhibitInfo])
 def read_links(
         exhibit_id: int,
         db: Session = Depends(get_db)
 ):
-    return get_linked_exhibits(db, exhibit_id)
+    links = get_linked_exhibits(db, exhibit_id)
+    if not links:
+        return []
 
-# Удалить ссылку
-@router.delete("/{link_id}")
-def remove_link(
-        connected_id: int,
+    return [
+        LinkedExhibitInfo(
+            id=link.linked.id,
+            title=link.linked.title,
+            region=link.linked.region,
+            main_photo=link.linked.main_photo
+        )
+        for link in links
+        if link.linked
+    ]
+
+# удалить ссылку
+@router.delete("/by-exhibit/{linked_exhibit_id}")
+def remove_link_by_exhibit(
         exhibit_id: int,
+        linked_exhibit_id: int,
         db: Session = Depends(get_db)
 ):
-    deleted = delete_linked_exhibit(db, connected_id, exhibit_id)
-    if not deleted:
-        raise HTTPException(status_code=404, detail="Ссылка не найдена")
-    return {"message": "Ссылка удалена"}
+    link = db.query(OtherExhibit).filter(
+        OtherExhibit.id_exhibit == exhibit_id,
+        OtherExhibit.linked_exhibit_id == linked_exhibit_id
+    ).first()
+
+    if not link:
+        raise HTTPException(status_code=404, detail="Связь не найдена")
+
+    db.delete(link)
+    db.commit()
+    return {"message": "Связь удалена"}
