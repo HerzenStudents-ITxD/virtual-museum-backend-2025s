@@ -11,13 +11,11 @@ exhibit_id - то же что id_exhibit, но передаётся при за�
 
 
 def add_connected_to_exhibit(db: Session, exhibit_id: int, connected: ConnectedExhibitCreate):
-    # проверяем существование обоих экспонатов
     if not db.get(Exhibit, exhibit_id):
         raise HTTPException(status_code=404, detail="Основной экспонат не найден")
     if not db.get(Exhibit, connected.linked_exhibit_id):
         raise HTTPException(status_code=404, detail="Связанный экспонат не найден")
 
-    # проверяем, что связь не дублируется
     existing = db.query(OtherExhibit).filter(
         OtherExhibit.id_exhibit == exhibit_id,
         OtherExhibit.linked_exhibit_id == connected.linked_exhibit_id
@@ -26,7 +24,6 @@ def add_connected_to_exhibit(db: Session, exhibit_id: int, connected: ConnectedE
     if existing:
         raise HTTPException(status_code=400, detail="Связь уже существует")
 
-    # создаем новую связь
     db_connected = OtherExhibit(
         id_exhibit=exhibit_id,
         linked_exhibit_id=connected.linked_exhibit_id
@@ -47,13 +44,11 @@ def get_linked_exhibits(db: Session, exhibit_id: int):
 
 
 def delete_linked_exhibit(db: Session, link_id: int, exhibit_id: int):
-    # сначала проверяем существование связи без привязки к exhibit_id
     link = db.query(OtherExhibit).filter(OtherExhibit.id == link_id).first()
 
     if not link:
         raise ValueError(f"Связь с ID {link_id} не найдена")
 
-    # затем проверяем принадлежность к экспонату
     if link.id_exhibit != exhibit_id:
         raise ValueError(
             f"Связь {link_id} принадлежит экспонату {link.id_exhibit}, а не {exhibit_id}"

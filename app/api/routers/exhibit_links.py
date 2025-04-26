@@ -12,14 +12,14 @@ from app.database.database import get_db
 
 router = APIRouter(prefix="/api/exhibits/{exhibit_id}/links")
 
-#добавить ссылку к статье
-@router.post("/", response_model=ConnectedExhibitResponse)
+
+@router.post("/", response_model=ConnectedExhibitResponse, tags=["3Д-экспонаты"])
 def create_link(
     exhibit_id: int,
     link: ConnectedExhibitCreate,
     db: Session = Depends(get_db)
 ):
-    """Создает связь между текущим экспонатом и указанным в теле запроса"""
+    """Создает связь между текущим 3Д-экспонатом и указанным в теле запроса"""
     try:
         return add_connected_to_exhibit(db, exhibit_id, link)
     except HTTPException as e:
@@ -27,12 +27,12 @@ def create_link(
     except Exception as e:
         raise HTTPException(status_code=500, detail=str(e))
 
-# получить все ссылки статьи
-@router.get("/", response_model=List[LinkedExhibitInfo])
+@router.get("/", response_model=List[LinkedExhibitInfo], tags=["3Д-экспонаты"])
 def read_links(
         exhibit_id: int,
         db: Session = Depends(get_db)
 ):
+    """Возвращает список связей 3Д-экспоната по ID 3Д-экспоната"""
     links = get_linked_exhibits(db, exhibit_id)
     if not links:
         return []
@@ -48,21 +48,26 @@ def read_links(
         if link.linked
     ]
 
-# удалить ссылку
-@router.delete("/by-exhibit/{linked_exhibit_id}")
+@router.delete("/by-exhibit/{linked_exhibit_id}", tags=["3Д-экспонаты"])
 def remove_link_by_exhibit(
         exhibit_id: int,
         linked_exhibit_id: int,
         db: Session = Depends(get_db)
 ):
-    link = db.query(OtherExhibit).filter(
-        OtherExhibit.id_exhibit == exhibit_id,
-        OtherExhibit.linked_exhibit_id == linked_exhibit_id
-    ).first()
+    """Удаляет связь по ID текущего и связанного 3Д-экспоната"""
+    try:
+        link = db.query(OtherExhibit).filter(
+            OtherExhibit.id_exhibit == exhibit_id,
+            OtherExhibit.linked_exhibit_id == linked_exhibit_id
+        ).first()
 
-    if not link:
-        raise HTTPException(status_code=404, detail="Связь не найдена")
+        if not link:
+            raise HTTPException(status_code=404, detail="Связь не найдена")
 
-    db.delete(link)
-    db.commit()
-    return {"message": "Связь удалена"}
+        deleted = delete_linked_exhibit(db, link.id, exhibit_id)
+        return {
+            "message": "Связь удалена",
+            "deleted_link_id": deleted.id
+        }
+    except Exception as e:
+        raise HTTPException(status_code=500, detail=str(e))

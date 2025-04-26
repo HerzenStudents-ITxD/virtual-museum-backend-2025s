@@ -11,18 +11,19 @@ from app.database.database import get_db
 
 router = APIRouter(prefix="/api/exhibits")
 
-@router.post("/", response_model=ExhibitResponse)
+@router.post("/", response_model=ExhibitResponse, tags=["3Д-экспонаты"])
 def create_exhibit_endpoint(
     exhibit: ExhibitCreate,
     db: Session = Depends(get_db)
 ):
+    """Создаёт новый 3Д-экспонат"""
     try:
         db_exhibit = create_exhibit(db, exhibit)
         return db_exhibit
     except ValueError as e:
         raise HTTPException(status_code=400, detail=str(e))
 
-@router.get("/", response_model=list[ExhibitResponse])
+@router.get("/", response_model=list[ExhibitResponse], tags=["3Д-экспонаты"])
 def read_exhibits(
     page: int = Query(1, ge=1, description="Номер страницы (начиная с 1)"),
     count: int = Query(20, ge=1, le=20, description="Количество на странице (макс. 20)"),
@@ -32,6 +33,7 @@ def read_exhibits(
     ethnos: Optional[str] = Query(None, description="Фильтр по этносу"),
     db: Session = Depends(get_db)
 ):
+    """Возвращает список 3Д-экспонатов (с фильтрацией и пагинацией)"""
     skip = (page - 1) * count
     return get_exhibits(
         db,
@@ -43,8 +45,9 @@ def read_exhibits(
         ethnos=ethnos
     )
 
-@router.get("/{exhibit_id}", response_model=ExhibitResponse)
+@router.get("/{exhibit_id}", response_model=ExhibitResponse, tags=["3Д-экспонаты"])
 def read_exhibit(exhibit_id: int, db: Session = Depends(get_db)):
+    """Возвращает конкретный 3Д-экспонат по ID"""
     db_exhibit = get_exhibit(db, exhibit_id)
     if not db_exhibit:
         raise HTTPException(status_code=404, detail="Экспонат не найден")

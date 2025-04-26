@@ -11,13 +11,11 @@ culture_id - то же что id_exhibit, но передаётся при за�
 
 
 def add_connected_to_article(db: Session, culture_id: int, connected: ConnectedArticleCreate):
-    # проверка существования объектов
     if not db.get(Culture, culture_id):
         raise HTTPException(status_code=404, detail="Основной экспонат не найден")
     if not db.get(Culture, connected.linked_article_id):
         raise HTTPException(status_code=404, detail="Связанный экспонат не найден")
 
-    # проверка на дубликат
     existing = db.query(OtherArticleCulture).filter(
         OtherArticleCulture.id_culture == culture_id,
         OtherArticleCulture.linked_article == connected.linked_article_id
@@ -25,7 +23,6 @@ def add_connected_to_article(db: Session, culture_id: int, connected: ConnectedA
     if existing:
         raise HTTPException(status_code=400, detail="Связь уже существует")
 
-    # создание и сохранение связи
     db_connected = OtherArticleCulture(
         id_culture=culture_id,
         linked_article=connected.linked_article_id
@@ -34,7 +31,7 @@ def add_connected_to_article(db: Session, culture_id: int, connected: ConnectedA
     db.commit()
     db.refresh(db_connected)
 
-    # возвращаем словарь вместо SQLAlchemy модели
+    # возвращаем словарь вместо SQLAlchemy модели(надо подумать)
     return {
         "id": db_connected.id,
         "id_culture": db_connected.id_culture,
@@ -52,13 +49,11 @@ def get_linked_articles(db: Session, culture_id: int):
 
 def delete_linked_article(db: Session, link_id: int, culture_id: int):
     """Удаляет связь с дополнительной проверкой"""
-    # сначала проверяем существование связи без привязки к exhibit_id
     link = db.query(OtherArticleCulture).filter(OtherArticleCulture.id == link_id).first()
 
     if not link:
         raise ValueError(f"Связь с ID {link_id} не найдена")
 
-    # затем проверяем принадлежность к экспонату
     if link.id_culture != culture_id:
         raise ValueError(
             f"Связь {link_id} принадлежит экспонату {link.id_culture}, а не {culture_id}"

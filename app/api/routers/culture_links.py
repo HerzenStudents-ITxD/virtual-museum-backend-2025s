@@ -13,13 +13,13 @@ from app.database.database import get_db
 router = APIRouter(prefix="/api/cultures/{culture_id}/links")
 
 
-# добавить связь
-@router.post("/", response_model=ConnectedArticleResponse)
+@router.post("/", response_model=ConnectedArticleResponse, tags=["Статьи из раздела Культура"])
 def create_link(
         culture_id: int,
         link: ConnectedArticleCreate,
         db: Session = Depends(get_db)
 ):
+    """Создает связь между текущей статьёй и указанной в теле запроса"""
     try:
         return add_connected_to_article(db, culture_id, link)
     except HTTPException as e:
@@ -27,13 +27,12 @@ def create_link(
     except Exception as e:
         raise HTTPException(status_code=500, detail=str(e))
 
-
-# получить все связи
-@router.get("/", response_model=List[LinkedArticleInfo])
+@router.get("/", response_model=List[LinkedArticleInfo], tags=["Статьи из раздела Культура"])
 def read_links(
         culture_id: int,
         db: Session = Depends(get_db)
 ):
+    """Возвращает список связей статьи по ID статьи"""
     links = get_linked_articles(db, culture_id)
     return [
         LinkedArticleInfo(
@@ -46,16 +45,14 @@ def read_links(
         if link.linked
     ]
 
-# удалить по ID связанного экспоната
-@router.delete("/by-linked/{linked_culture_id}")
+@router.delete("/by-linked/{linked_culture_id}", tags=["Статьи из раздела Культура"])
 def remove_link_by_linked_culture(
         culture_id: int,
         linked_culture_id: int,
         db: Session = Depends(get_db)
 ):
-    """Удаляет связь по ID связанного экспоната"""
+    """Удаляет связь по ID текущей и связанной статьи"""
     try:
-        # Находим связь по параметрам
         link = db.query(OtherArticleCulture).filter(
             OtherArticleCulture.id_culture == culture_id,
             OtherArticleCulture.linked_article == linked_culture_id
@@ -64,7 +61,6 @@ def remove_link_by_linked_culture(
         if not link:
             raise HTTPException(status_code=404, detail="Связь не найдена")
 
-        # Используем CRUD метод для удаления
         deleted = delete_linked_article(db, link.id, culture_id)
         return {
             "message": "Связь удалена",
