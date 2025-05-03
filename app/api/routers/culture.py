@@ -1,3 +1,4 @@
+from app.core.security import allow_create_edit, allow_all
 from app.database.models import CultureType
 from app.schemas.culture import CultureCreate, CultureResponse
 from fastapi import APIRouter, Depends, HTTPException, Query
@@ -12,7 +13,10 @@ from app.database.database import get_db
 
 router = APIRouter(prefix="/api/culture")
 
-@router.post("/", response_model=CultureResponse, tags=["Статьи из раздела Культура"])
+@router.post("/",
+             response_model=CultureResponse,
+             tags=["Статьи из раздела Культура"],
+             dependencies=[Depends(allow_create_edit)])
 def create_culture_endpoint(
     culture: CultureCreate,
     db: Session = Depends(get_db)
@@ -24,7 +28,10 @@ def create_culture_endpoint(
     except ValueError as e:
         raise HTTPException(status_code=400, detail=str(e))
 
-@router.get("/", response_model=List[CultureResponse], tags=["Статьи из раздела Культура"])
+@router.get("/",
+            response_model=List[CultureResponse],
+            tags=["Статьи из раздела Культура"],
+            dependencies=[Depends(allow_all)])
 def read_culture_articles(
     type: Optional[CultureType] = Query(None),
     skip: int = Query(0, ge=0),
@@ -39,8 +46,13 @@ def read_culture_articles(
         limit=limit
     )
 
-@router.get("/{culture_id}", response_model=CultureResponse, tags=["Статьи из раздела Культура"])
-def read_culture_article(culture_id: int, db: Session = Depends(get_db)):
+@router.get("/{culture_id}",
+            response_model=CultureResponse,
+            tags=["Статьи из раздела Культура"],
+            dependencies=[Depends(allow_all)])
+def read_culture_article(
+        culture_id: int,
+        db: Session = Depends(get_db)):
     """Возвращает конкретную статью по ID"""
     db_culture = get_culture_article(db, culture_id)
     if not db_culture:

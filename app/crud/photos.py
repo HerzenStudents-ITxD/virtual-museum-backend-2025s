@@ -18,7 +18,7 @@ def get_photos_for_exhibit(db: Session, exhibit_id: int):
 def delete_photo(db: Session, photo_id: int, exhibit_id: int):
     photo = db.query(PhotoExhibit).filter(
         PhotoExhibit.id == photo_id,
-        PhotoExhibit.id_exhibit == exhibit_id  # Проверяем принадлежность к экспонату
+        PhotoExhibit.id_exhibit == exhibit_id
     ).first()
     if not photo:
         return None

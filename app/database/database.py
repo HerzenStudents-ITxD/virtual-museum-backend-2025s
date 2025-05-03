@@ -53,6 +53,20 @@ SessionLocal = sessionmaker(autocommit=False, autoflush=False, bind=engine)
 def init_db():
     models.Base.metadata.create_all(engine)
 
+    db = SessionLocal()
+    try:
+        if not db.query(models.Admin).first():
+            from app.crud.auth import create_admin
+            from app.schemas.auth import AdminCreate
+            create_admin(db, AdminCreate(
+                login="museum",
+                password="thebestadmin",
+                role="admin"
+            ))
+            db.commit()
+    finally:
+        db.close()
+
 def get_db():
     db = SessionLocal()
     try:
