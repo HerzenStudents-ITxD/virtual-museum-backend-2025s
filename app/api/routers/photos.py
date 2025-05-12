@@ -1,6 +1,7 @@
 import os
 from fastapi import APIRouter, UploadFile, File, HTTPException, Depends
 from sqlalchemy.orm import Session
+
 from app.database.database import get_db
 from app.database import models
 from typing import Literal
@@ -15,17 +16,20 @@ router = APIRouter(
 UPLOAD_DIR = "uploads/images"
 
 
+
 @router.post("/{type}/{item_id}")
 def upload_photo(
     type: Literal["culture", "exhibit"],
     item_id: int,
     file: UploadFile = File(...),
     db: Session = Depends(get_db)
+
 ):
     filename = f"{uuid4().hex}_{file.filename}"
     folder = os.path.join(UPLOAD_DIR, type)
     os.makedirs(folder, exist_ok=True)
     file_path = os.path.join(folder, filename)
+
 
     with open(file_path, "wb") as image:
         image.write(file.file.read())
@@ -56,6 +60,7 @@ def delete_photo(
     type: Literal["culture", "exhibit"],
     item_id: int,
     db: Session = Depends(get_db)
+
 ):
     if type == "culture":
         culture = db.query(models.Culture).filter_by(id=item_id).first()

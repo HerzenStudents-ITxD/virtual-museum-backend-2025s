@@ -12,7 +12,9 @@ def create_admin(db: Session, admin: AdminCreate):
         login=admin.login,
         password_hash=get_password_hash(admin.password, salt),
         salt=salt,
+
         role="admin"
+
     )
     db.add(db_admin)
     db.commit()

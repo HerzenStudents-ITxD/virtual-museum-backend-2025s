@@ -1,7 +1,7 @@
 from enum import Enum as PyEnum
 from sqlalchemy import Enum as SQLEnum
 from sqlalchemy.orm import relationship, declarative_base
-from sqlalchemy import Column, Integer, String, ForeignKey
+from sqlalchemy import Column, Integer, String, ForeignKey, Boolean
 
 Base = declarative_base()
 
@@ -44,6 +44,8 @@ class OtherExhibit(Base):
     exhibit = relationship("Exhibit", foreign_keys=[id_exhibit], back_populates="linked_exhibits")
     linked = relationship("Exhibit", foreign_keys=[linked_exhibit_id])
 
+class AdminRole(str, PyEnum):
+    ADMIN = "admin"
 
 class AdminRole(str, PyEnum):
     ADMIN = "admin"
