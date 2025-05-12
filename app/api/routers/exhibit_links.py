@@ -1,6 +1,7 @@
 from fastapi import APIRouter, Depends, HTTPException
 from sqlalchemy.orm import Session
 from typing import List
+from app.core.security import allow_create_edit, allow_all
 from app.crud.exhibit_links import (
     add_connected_to_exhibit,
     get_linked_exhibits,
@@ -13,7 +14,10 @@ from app.database.database import get_db
 router = APIRouter(prefix="/api/exhibits/{exhibit_id}/links")
 
 
-@router.post("/", response_model=ConnectedExhibitResponse, tags=["3Д-экспонаты"])
+@router.post("/",
+             response_model=ConnectedExhibitResponse,
+             tags=["3Д-экспонаты"],
+             dependencies=[Depends(allow_create_edit)])
 def create_link(
     exhibit_id: int,
     link: ConnectedExhibitCreate,
@@ -27,7 +31,10 @@ def create_link(
     except Exception as e:
         raise HTTPException(status_code=500, detail=str(e))
 
-@router.get("/", response_model=List[LinkedExhibitInfo], tags=["3Д-экспонаты"])
+@router.get("/",
+            response_model=List[LinkedExhibitInfo],
+            tags=["3Д-экспонаты"],
+            dependencies=[Depends(allow_all)])
 def read_links(
         exhibit_id: int,
         db: Session = Depends(get_db)
@@ -48,7 +55,9 @@ def read_links(
         if link.linked
     ]
 
-@router.delete("/by-exhibit/{linked_exhibit_id}", tags=["3Д-экспонаты"])
+@router.delete("/by-exhibit/{linked_exhibit_id}",
+               tags=["3Д-экспонаты"],
+               dependencies=[Depends(allow_create_edit)])
 def remove_link_by_exhibit(
         exhibit_id: int,
         linked_exhibit_id: int,

@@ -1,6 +1,7 @@
 from fastapi import APIRouter, Depends, HTTPException
 from sqlalchemy.orm import Session
 from typing import List
+from app.core.security import allow_create_edit, allow_all
 from app.crud.culture_links import (
     add_connected_to_article,
     get_linked_articles,
@@ -13,7 +14,10 @@ from app.database.database import get_db
 router = APIRouter(prefix="/api/cultures/{culture_id}/links")
 
 
-@router.post("/", response_model=ConnectedArticleResponse, tags=["Статьи из раздела Культура"])
+@router.post("/",
+             response_model=ConnectedArticleResponse,
+             tags=["Статьи из раздела Культура"],
+             dependencies=[Depends(allow_create_edit)])
 def create_link(
         culture_id: int,
         link: ConnectedArticleCreate,
@@ -27,7 +31,10 @@ def create_link(
     except Exception as e:
         raise HTTPException(status_code=500, detail=str(e))
 
-@router.get("/", response_model=List[LinkedArticleInfo], tags=["Статьи из раздела Культура"])
+@router.get("/",
+            response_model=List[LinkedArticleInfo],
+            tags=["Статьи из раздела Культура"],
+            dependencies=[Depends(allow_all)])
 def read_links(
         culture_id: int,
         db: Session = Depends(get_db)
@@ -45,7 +52,9 @@ def read_links(
         if link.linked
     ]
 
-@router.delete("/by-linked/{linked_culture_id}", tags=["Статьи из раздела Культура"])
+@router.delete("/by-linked/{linked_culture_id}",
+               tags=["Статьи из раздела Культура"],
+               dependencies=[Depends(allow_create_edit)])
 def remove_link_by_linked_culture(
         culture_id: int,
         linked_culture_id: int,

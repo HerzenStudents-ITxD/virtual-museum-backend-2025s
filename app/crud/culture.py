@@ -1,6 +1,6 @@
 from typing import Optional
 from sqlalchemy.orm import Session
-from app.database.models import Culture, CultureType
+from app.database.models import Culture, CultureTypeEnum
 from app.schemas.culture import CultureCreate
 
 #получить конкретную статью
@@ -18,7 +18,7 @@ def create_culture(db: Session, culture: CultureCreate):
 #получить статьи с фильтром
 def get_culture_articles(
         db: Session,
-        type: Optional[CultureType] = None,  # Делаем параметр опциональным
+        type: Optional[CultureTypeEnum] = None,  # делаем параметр опциональным
         skip: int = 0,
         limit: int = 100
 ):

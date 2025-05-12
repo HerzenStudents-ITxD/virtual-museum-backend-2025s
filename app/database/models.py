@@ -28,7 +28,7 @@ class PhotoExhibit(Base):
     __tablename__ = 'photos_exhibit'
 
     id = Column(Integer, primary_key=True)
-    photo = Column(String(255), nullable=False)
+    photo_path = Column(String(255), nullable=False)  # хранится относительный путь, например uploads/images/name.jpg
     id_exhibit = Column(Integer, ForeignKey('exhibit.id', ondelete="CASCADE"))
 
     exhibit = relationship("Exhibit", back_populates="photos")
@@ -45,14 +45,19 @@ class OtherExhibit(Base):
     linked = relationship("Exhibit", foreign_keys=[linked_exhibit_id])
 
 
+class AdminRole(str, PyEnum):
+    ADMIN = "admin"
+
 class Admin(Base):
     __tablename__ = 'admin'
 
     login = Column(String(50), primary_key=True)
     password_hash = Column(String(255), nullable=False)
     salt = Column(String(100), nullable=False)
+    role = Column(String(100), nullable=False)
 
-class CultureType(str, PyEnum):
+
+class CultureTypeEnum(str, PyEnum):
     DECORATIVE = "Декоративно-прикладное искусство"
     VERBAL = "Устное народное творчество"
     MUSIC = "Танцевально-музыкальная культура"
@@ -61,7 +66,7 @@ class Culture(Base):
     __tablename__ = 'culture'
 
     id = Column(Integer, primary_key=True, index=True)
-    type = Column(SQLEnum(CultureType), nullable=False)
+    type = Column(SQLEnum(CultureTypeEnum), nullable=False)
     title = Column(String(255), nullable=False)
     author = Column(String(100), nullable=True)
     model = Column(String(100), nullable=True)
@@ -74,11 +79,11 @@ class Culture(Base):
     ethnos = Column(String(100), nullable=True)
     main_photo = Column(String(255), nullable=True)
 
-
     linked_articles = relationship("OtherArticleCulture",
                                    foreign_keys="[OtherArticleCulture.id_culture]",
                                    back_populates="culture",
                                    cascade="all, delete-orphan")
+
 
 class OtherArticleCulture(Base):
     __tablename__ = 'other_articles_culture'
