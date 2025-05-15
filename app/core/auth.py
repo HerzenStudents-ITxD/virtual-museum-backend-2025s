@@ -47,9 +47,7 @@ async def get_current_admin(
         raise credentials_exception
 
     admin = db.query(Admin).filter(Admin.login == login).first()
-
     if admin is None:
-
         raise credentials_exception
     return admin
 

@@ -1,7 +1,5 @@
 from app.core.security import allow_create_edit, allow_all
-
 from app.database.models import CultureTypeEnum
-
 from app.schemas.culture import CultureCreate, CultureResponse
 from fastapi import APIRouter, Depends, HTTPException, Query
 from sqlalchemy.orm import Session

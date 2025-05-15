@@ -19,7 +19,6 @@ def create_culture(db: Session, culture: CultureCreate):
 def get_culture_articles(
         db: Session,
         type: Optional[CultureTypeEnum] = None,  # делаем параметр опциональным
-
         skip: int = 0,
         limit: int = 100
 ):

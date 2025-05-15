@@ -9,11 +9,9 @@ from app.crud.exhibits import (
 )
 from app.database.database import get_db
 from app.core.security import allow_create_edit, allow_all
-
 from app.database.models import Exhibit
 
 router = APIRouter(prefix="/api/exhibits")
-
 
 
 @router.post("/",
@@ -32,7 +30,6 @@ def create_exhibit_endpoint(
         raise HTTPException(status_code=400, detail=str(e))
 
 
-
 @router.get("/",
             response_model=list[ExhibitResponse],
             tags=["3Д-экспонаты"],
@@ -48,7 +45,6 @@ def read_exhibits(
 ):
     """Возвращает список 3Д-экспонатов (с фильтрацией и пагинацией)"""
     skip = (page - 1) * count
-
 
     exhibits = db.query(Exhibit)\
         .options(joinedload(Exhibit.photos))\
