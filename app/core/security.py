@@ -15,5 +15,3 @@ class RoleChecker:
             )
 
 allow_create_edit = RoleChecker([AdminRole.ADMIN])
-allow_admin = RoleChecker([AdminRole.ADMIN])
-allow_all = RoleChecker([AdminRole.ADMIN])

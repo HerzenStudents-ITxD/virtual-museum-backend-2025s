@@ -1,6 +1,8 @@
 import os
 from fastapi import APIRouter, UploadFile, File, HTTPException, Depends
 from sqlalchemy.orm import Session
+
+from app.core.security import allow_create_edit
 from app.database.database import get_db
 from app.database import models
 from typing import Literal
@@ -15,7 +17,9 @@ router = APIRouter(
 UPLOAD_DIR = "uploads/images"
 
 
-@router.post("/{type}/{item_id}")
+@router.post("/{type}/{item_id}",
+             dependencies = [Depends(allow_create_edit)]
+)
 def upload_photo(
     type: Literal["culture", "exhibit"],
     item_id: int,
@@ -51,7 +55,8 @@ def upload_photo(
     return {"message": "Фото успешно загружено", "path": file_path}
 
 
-@router.delete("/{type}/{item_id}")
+@router.delete("/{type}/{item_id}",
+               dependencies = [Depends(allow_create_edit)])
 def delete_photo(
     type: Literal["culture", "exhibit"],
     item_id: int,

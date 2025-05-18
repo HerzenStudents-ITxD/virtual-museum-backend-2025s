@@ -1,7 +1,7 @@
 from fastapi import APIRouter, Depends, HTTPException
 from sqlalchemy.orm import Session
 from typing import List
-from app.core.security import allow_create_edit, allow_all
+from app.core.security import allow_create_edit
 from app.crud.culture_links import (
     add_connected_to_article,
     get_linked_articles,
@@ -33,8 +33,7 @@ def create_link(
 
 @router.get("/",
             response_model=List[LinkedArticleInfo],
-            tags=["Статьи из раздела Культура"],
-            dependencies=[Depends(allow_all)])
+            tags=["Статьи из раздела Культура"])
 def read_links(
         culture_id: int,
         db: Session = Depends(get_db)

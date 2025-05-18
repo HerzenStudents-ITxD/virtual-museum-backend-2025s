@@ -8,7 +8,7 @@ from app.crud.exhibits import (
     create_exhibit
 )
 from app.database.database import get_db
-from app.core.security import allow_create_edit, allow_all
+from app.core.security import allow_create_edit
 from app.database.models import Exhibit
 
 router = APIRouter(prefix="/api/exhibits")
@@ -32,8 +32,7 @@ def create_exhibit_endpoint(
 
 @router.get("/",
             response_model=list[ExhibitResponse],
-            tags=["3Д-экспонаты"],
-            dependencies=[Depends(allow_all)])
+            tags=["3Д-экспонаты"])
 def read_exhibits(
     page: int = Query(1, ge=1, description="Номер страницы (начиная с 1)"),
     count: int = Query(20, ge=1, le=20, description="Количество на странице (макс. 20)"),
@@ -64,8 +63,7 @@ def read_exhibits(
 
 @router.get("/{exhibit_id}",
             response_model=ExhibitResponse,
-            tags=["3Д-экспонаты"],
-            dependencies=[Depends(allow_all)])
+            tags=["3Д-экспонаты"])
 def read_exhibit(exhibit_id: int,
                  db: Session = Depends(get_db)):
     """Возвращает конкретный 3Д-экспонат по ID"""

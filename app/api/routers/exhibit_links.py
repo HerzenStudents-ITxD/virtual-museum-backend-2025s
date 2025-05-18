@@ -1,7 +1,7 @@
 from fastapi import APIRouter, Depends, HTTPException
 from sqlalchemy.orm import Session
 from typing import List
-from app.core.security import allow_create_edit, allow_all
+from app.core.security import allow_create_edit
 from app.crud.exhibit_links import (
     add_connected_to_exhibit,
     get_linked_exhibits,
@@ -33,8 +33,7 @@ def create_link(
 
 @router.get("/",
             response_model=List[LinkedExhibitInfo],
-            tags=["3Д-экспонаты"],
-            dependencies=[Depends(allow_all)])
+            tags=["3Д-экспонаты"])
 def read_links(
         exhibit_id: int,
         db: Session = Depends(get_db)
